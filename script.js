@@ -1,18 +1,18 @@
 let data;
 
 // Resizing variables
-const maxW = 800;
+const maxW = 1200;
 const maxH = 600;
 
-const maxPadding = 50;
-const minPadding = 50;
+const maxPadding = 75;
+const minPadding = 75;
 const wrapPadding = 15;
 
-let w = 800;
-let h = 600;
+let w = maxW;
+let h = maxH;
 let padding = maxPadding;
 
-// Helper function to improve performance
+// Helper function to improve performance when resizing the window
 function debounce(func, wait, immediate) {
     var timeout;
     return function() {
@@ -32,23 +32,22 @@ function debounce(func, wait, immediate) {
     };
 };
 
-// Window resizing wrapped in said function
-var resize = debounce(function () {
+// Render function and resizing wrapped in debounce
+var drawHeatMap = debounce(function () {
     const title = document.getElementById('title');
     const titleStyle = getComputedStyle(title);
     const titleHeight = title.offsetHeight + parseInt(titleStyle.marginTop) + parseInt(titleStyle.marginBottom);
 
-    if(window.innerWidth < 900) {
+    if(window.innerWidth < maxW + 2 * maxPadding) {
         w = window.innerWidth - (wrapPadding * 2);
-        h = window.innerHeight - titleHeight - (wrapPadding * 2) - 5;
+        h = window.innerHeight - titleHeight - (wrapPadding * 2);
         padding = minPadding;
     } else {
         w = maxW;
         h = maxH;
         padding = maxPadding;
     }
-
-    drawHeatMap();
+    renderHeatMap();
 }, 100);
 
 // Tooltip
@@ -58,7 +57,7 @@ const tooltip = d3.select('body').append('div')
     .style('opacity', 0);
 
 // Draws the Heat Map
-const drawHeatMap = () => {
+const renderHeatMap = () => {
     const svg = d3.select('.svg-target')
     .html('')
     .append('svg')
@@ -67,16 +66,48 @@ const drawHeatMap = () => {
     .attr('height', h);
 
     // x axis
+    const xScale = d3.scaleLinear()
+        .domain([d3.min(data.monthlyVariance, d => d.year), d3.max(data.monthlyVariance, d => d.year)])
+        .range([padding, w - padding])
+        .nice();
+
+    const xAxis = d3.axisBottom(xScale)
+        .tickFormat(d3.format('d'));
+
+    svg.append('g')
+        .attr('transform', `translate(0, ${h - padding})`)
+        .attr('id', 'x-axis')
+        .call(xAxis);
 
     // y axis
+    const nums = [...Array(12).keys()].reverse();
+    const dates = nums.map(n => `${`0${n+1}`.slice(-2)}/01/1970`);
+    const months = dates.map(d => (new Date(d)).toLocaleString('en-us', {month: 'long'}));
+    const yScale = d3.scaleBand()
+        .domain(months)
+        .range([h - padding, padding]);
+
+    const yAxis = d3.axisLeft(yScale);
+
+    svg.append('g')
+        .attr('transform', `translate(${padding}, 0)`)
+        .attr('id', 'y-axis')
+        .call(yAxis);
 
     // rects?
     // tooltip?
 
     // Legend
-
 }
 
 // Get data
-data = [];
-resize();
+(async () => {
+    const response = await fetch('global-temperature.json');
+    data = await response.json();
+    console.log(data);
+    drawHeatMap();
+})();
+
+document.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('resize', drawHeatMap);
+});
