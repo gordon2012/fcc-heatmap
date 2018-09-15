@@ -65,6 +65,9 @@ const renderHeatMap = () => {
     .attr('width', w)
     .attr('height', h);
 
+    // Title
+    d3.select('.title-baseTemp').html(`${data.baseTemperature}&deg;C`);
+
     // x axis
     const xScale = d3.scaleLinear()
         .domain([d3.min(data.monthlyVariance, d => d.year), d3.max(data.monthlyVariance, d => d.year)])
