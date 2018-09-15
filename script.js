@@ -112,6 +112,22 @@ const renderHeatMap = () => {
     // Tooltip
 
     // Legend
+    const legendScale = d3.scaleSequential(t => d3.interpolateRdYlBu(1-t))
+        .domain([
+            d3.min(data.monthlyVariance, d => data.baseTemperature + d.variance),
+            d3.max(data.monthlyVariance, d => data.baseTemperature + d.variance)
+        ]);
+    svg.append('g')
+        .attr('id', 'legend')
+        .attr('transform', `translate(${padding}, ${h - padding + (padding / 3)})`);
+    var legend = d3.legendColor()
+        .cells(10)
+        .shapePadding(0)
+        .shapeWidth(((w-padding*2) / 10))
+        .orient('horizontal')
+        .scale(legendScale);
+    svg.select('#legend')
+        .call(legend);
 }
 
 // Get data
