@@ -69,7 +69,7 @@ const renderHeatMap = () => {
     const xScale = d3.scaleLinear()
         .domain([d3.min(data.monthlyVariance, d => d.year), d3.max(data.monthlyVariance, d => d.year)])
         .range([padding, w - padding])
-        .nice();
+        // .nice();
 
     const xAxis = d3.axisBottom(xScale)
         .tickFormat(d3.format('d'));
@@ -94,15 +94,45 @@ const renderHeatMap = () => {
         .attr('id', 'y-axis')
         .call(yAxis);
 
-    // rects?
+    // rects.. need color
+
+    console.log(data.monthlyVariance.filter(d => d.variance < 0).map(d => Math.abs(d.variance)));
+
+    const bScale = d3.scaleLinear()
+    // .domain([0, d3.max(data.monthlyVariance.map(d => Math.abs(d.variance)).filter(d => d < 0))])
+        .domain([0, d3.max(data.monthlyVariance.filter(d => d.variance < 0).map(d => Math.abs(d.variance)))])
+        .range([0,255]);
+
+    console.log(bScale(3.4));
+
+
+    // console.log(   h, padding  );
+    console.log(`  ( (h - padding*2) / 12 ) * (1 + 1)   `)
+    console.log(`  ( (${h} - ${padding}*2) / 12 ) * (1 + 1)   `)
+    console.log(  ( (h - padding*2) / 12 ) * (1 + 1)   )
     svg.selectAll('rect')
         .data(data.monthlyVariance)
         .enter()
         .append('rect')
-            .attr('x', (d,i) =>((w-(padding*2)) / data.monthlyVariance.length) * i + padding)
-            .attr('y', d => (padding * yScale(0.5))  )
-            .attr('width', ((w - (padding * 2)) / data.monthlyVariance.length))
-            .attr('height',  (h-(padding * 2)) / 12  );
+
+            // .attr('x', (d,i) =>((w-(padding*2)) / data.monthlyVariance.length) * i + padding)
+            .attr('x', (d,i) =>    xScale(d.year)   )
+
+            // .attr('y', d => (padding * yScale(0.5)))
+
+            .attr('y', d =>  padding + (h-padding*2)/12 * (d.month - 1)     )
+
+            // orig
+            .attr('width', (w - padding*2) / data.monthlyVariance.length * 12)
+
+            // .attr('width', 12)
+
+            .attr('height',  (h-(padding * 2)) / 12  )
+            .attr('stroke-width', 0)
+            .attr('fill', 'red');
+
+
+            // min/blue  -->  max/red
 
 
     // tooltip?
