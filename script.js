@@ -69,73 +69,47 @@ const renderHeatMap = () => {
     const xScale = d3.scaleLinear()
         .domain([d3.min(data.monthlyVariance, d => d.year), d3.max(data.monthlyVariance, d => d.year)])
         .range([padding, w - padding])
-        // .nice();
-
     const xAxis = d3.axisBottom(xScale)
         .tickFormat(d3.format('d'));
-
     svg.append('g')
         .attr('transform', `translate(0, ${h - padding})`)
         .attr('id', 'x-axis')
         .call(xAxis);
 
     // y axis
-    const nums = [...Array(12).keys()].reverse();
+    const nums = [...Array(12).keys()];
     const dates = nums.map(n => `${`0${n+1}`.slice(-2)}/01/1970`);
     const months = dates.map(d => (new Date(d)).toLocaleString('en-us', {month: 'long'}));
     const yScale = d3.scaleBand()
         .domain(months)
-        .range([h - padding, padding]);
-
+        .rangeRound([padding, h - padding]);
     const yAxis = d3.axisLeft(yScale);
-
     svg.append('g')
         .attr('transform', `translate(${padding}, 0)`)
         .attr('id', 'y-axis')
         .call(yAxis);
 
-    // rects.. need color
+    // Color scale
+    const colorScale = d3.scaleLinear()
+        .domain([d3.min(data.monthlyVariance, d => d.variance), d3.max(data.monthlyVariance, d => d.variance)])
+        .range([0,1]);
 
-    console.log(data.monthlyVariance.filter(d => d.variance < 0).map(d => Math.abs(d.variance)));
-
-    const bScale = d3.scaleLinear()
-    // .domain([0, d3.max(data.monthlyVariance.map(d => Math.abs(d.variance)).filter(d => d < 0))])
-        .domain([0, d3.max(data.monthlyVariance.filter(d => d.variance < 0).map(d => Math.abs(d.variance)))])
-        .range([0,255]);
-
-    console.log(bScale(3.4));
-
-
-    // console.log(   h, padding  );
-    console.log(`  ( (h - padding*2) / 12 ) * (1 + 1)   `)
-    console.log(`  ( (${h} - ${padding}*2) / 12 ) * (1 + 1)   `)
-    console.log(  ( (h - padding*2) / 12 ) * (1 + 1)   )
+    // Rects
     svg.selectAll('rect')
         .data(data.monthlyVariance)
         .enter()
         .append('rect')
+            .attr('x', (d,i) => xScale(d.year) + 1)
+            .attr('y', d =>  padding + (h - padding * 2) / 12 * (d.month - 1))
+            .attr('width', (w - padding * 2) / data.monthlyVariance.length * 12)
+            .attr('height', yScale.bandwidth())
+            .attr('fill', d => d3.interpolateRdYlBu(1 - colorScale(d.variance)))
+            .attr('class', 'cell')
+            .attr('data-month', d => d.month - 1)
+            .attr('data-year', d => d.year)
+            .attr('data-temp', d => d.variance)
 
-            // .attr('x', (d,i) =>((w-(padding*2)) / data.monthlyVariance.length) * i + padding)
-            .attr('x', (d,i) =>    xScale(d.year)   )
-
-            // .attr('y', d => (padding * yScale(0.5)))
-
-            .attr('y', d =>  padding + (h-padding*2)/12 * (d.month - 1)     )
-
-            // orig
-            .attr('width', (w - padding*2) / data.monthlyVariance.length * 12)
-
-            // .attr('width', 12)
-
-            .attr('height',  (h-(padding * 2)) / 12  )
-            .attr('stroke-width', 0)
-            .attr('fill', 'red');
-
-
-            // min/blue  -->  max/red
-
-
-    // tooltip?
+    // Tooltip
 
     // Legend
 }
