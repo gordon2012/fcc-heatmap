@@ -1,7 +1,7 @@
 let data;
 
 // Resizing variables
-const maxW = 1200;
+const maxW = 2000;
 const maxH = 600;
 
 const maxPadding = 75;
@@ -82,7 +82,7 @@ const renderHeatMap = () => {
     const months = dates.map(d => (new Date(d)).toLocaleString('en-us', {month: 'long'}));
     const yScale = d3.scaleBand()
         .domain(months)
-        .rangeRound([padding, h - padding]);
+        .range([padding, h - padding]);
     const yAxis = d3.axisLeft(yScale);
     svg.append('g')
         .attr('transform', `translate(${padding}, 0)`)
@@ -108,8 +108,9 @@ const renderHeatMap = () => {
             .attr('data-month', d => d.month - 1)
             .attr('data-year', d => d.year)
             .attr('data-temp', d => d.variance)
-
-    // Tooltip
+            .attr('data-monthName', d => months[d.month - 1])
+            .attr('data-temperature', d => (data.baseTemperature + d.variance).toFixed(1))
+            .attr('data-variance', d => d.variance.toFixed(1))
 
     // Legend
     const legendScale = d3.scaleSequential(t => d3.interpolateRdYlBu(1-t))
@@ -134,10 +135,38 @@ const renderHeatMap = () => {
 (async () => {
     const response = await fetch('global-temperature.json');
     data = await response.json();
-    console.log(data);
     drawHeatMap();
 })();
 
 document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('resize', drawHeatMap);
+
+    // Tooltip
+    document.querySelector('body').addEventListener('mouseover', event => {
+        const el = event.target;
+
+        if(el.classList.contains('cell')) {
+            const elr = el.getBoundingClientRect();
+            const d = el.dataset;
+
+            const tt = document.getElementById('tooltip');
+            const ttr = tt.getBoundingClientRect();
+            tt.style.opacity = 1;
+            tt.style.left = `${elr.x - ttr.width/2}px`;
+            tt.style.top = `${elr.y - ttr.height - 10}px`;
+
+            tt.dataset.year = d.year;
+            tt.innerHTML = `
+                <strong>${d.monthName} ${d.year}</strong><br>
+                <hr>
+                ${d.temperature}&deg;C<br>
+                ${d.variance < 0 ? '' : '+'}${d.variance}&deg;C
+            `;
+        }
+    });
+    document.querySelector('body').addEventListener('mouseout', event => {
+        if(event.target.classList.contains('cell')) {
+            document.getElementById('tooltip').style.opacity = 0;
+        }
+    });
 });

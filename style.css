@@ -29,6 +29,12 @@ svg {
     text-align: center;
 }
 
+/* Cells */
+rect.cell:hover {
+    stroke: black;
+}
+
+/* Tooltip */
 #tooltip {
     text-align: center;
     padding: 15px;
