@@ -95,6 +95,16 @@ const renderHeatMap = () => {
         .call(yAxis);
 
     // rects?
+    svg.selectAll('rect')
+        .data(data.monthlyVariance)
+        .enter()
+        .append('rect')
+            .attr('x', (d,i) =>((w-(padding*2)) / data.monthlyVariance.length) * i + padding)
+            .attr('y', d => (padding * yScale(0.5))  )
+            .attr('width', ((w - (padding * 2)) / data.monthlyVariance.length))
+            .attr('height',  (h-(padding * 2)) / 12  );
+
+
     // tooltip?
 
     // Legend
