@@ -50,12 +50,6 @@ var drawHeatMap = debounce(function () {
     renderHeatMap();
 }, 100);
 
-// Tooltip
-const tooltip = d3.select('body').append('div')
-    .attr('id', 'tooltip')
-    .attr('class', 'card')
-    .style('opacity', 0);
-
 // Draws the Heat Map
 const renderHeatMap = () => {
     const svg = d3.select('.svg-target')
