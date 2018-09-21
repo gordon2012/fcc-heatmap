@@ -4,6 +4,6 @@
 
 ### A freeCodeCamp Data Visualization Project
 
-<http://heatmap.gordonscampinggear.com/>
+<https://heatmap.gordonscampinggear.com>
 
-![Heat Map](http://gordonscampinggear.com/img/heatmap.png)
+![Heat Map](https://gordonscampinggear.com/img/heatmap.png)
